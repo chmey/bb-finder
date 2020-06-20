@@ -50,6 +50,16 @@ def getJumpSuccessors(disas):
     return successors
 
 
+def writeDOT(adjacency):
+    """Write the graph as a DOT file."""
+    with open("cfg.dot", "w") as fd:
+        fd.write('digraph basic_blocks {\n')
+        for node in adjacency:
+            for adj in node:
+                fd.write(f'\t"0x{node[0]:x}" -> "0x{adj:x}"\n')
+        fd.write('}\n')
+
+
 def endsBasicBlock(op, BASIC_BLOCKS):
     """Return whether an op ends a basic block."""
     return op.group(CS_GRP_JUMP) or op.group(CS_GRP_CALL) or op.group(CS_GRP_RET)
@@ -150,6 +160,9 @@ for b in BASIC_BLOCKS:
 disas, frshDisas = tee(frshDisas)
 
 print("\n# Basic blocks and their connected basic blocks:")
-for adj in makeEdges(disas, BASIC_BLOCKS):
+adjacency = makeEdges(disas, BASIC_BLOCKS)
+for adj in adjacency:
     nodes = ', '.join('0x%x' % i for i in adj)
     print(f"0x{adj[0]:x}: {nodes}")
+
+writeDOT(adjacency)
