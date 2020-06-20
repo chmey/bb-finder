@@ -25,10 +25,10 @@ def getJumpTargets(disas):
         if op.group(CS_GRP_JUMP):
             # op is of semantic JUMP group
             targets.append(op.operands[0].value.imm)
-
-        if op.group(CS_GRP_CALL):
-            # op is of semantic CALL group
-            targets.append(op.operands[0].value.imm)
+        # Uncomment if call targets are considered basic blocks
+        # if op.group(CS_GRP_CALL):
+        #   # op is of semantic CALL group
+        #    targets.append(op.operands[0].value.imm)
     return targets
 
 
@@ -92,9 +92,10 @@ def makeEdges(disas, BASIC_BLOCKS):
                         except StopIteration:
                             raise
                     break
-                elif op.group(CS_GRP_CALL):
-                    adjB.append(op.operands[0].value.imm)
-                    break
+                # Uncomment if called functions are considered a basic block
+                # elif op.group(CS_GRP_CALL):
+                #    adjB.append(op.operands[0].value.imm)
+                #    break
                 elif op.group(CS_GRP_RET):
                     break
             try:
