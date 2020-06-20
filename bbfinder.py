@@ -54,9 +54,9 @@ def writeDOT(adjacency):
     """Write the graph as a DOT file."""
     with open("cfg.dot", "w") as fd:
         fd.write('digraph basic_blocks {\n')
-        for node in adjacency:
-            for adj in node:
-                fd.write(f'\t"0x{node[0]:x}" -> "0x{adj:x}"\n')
+        for B in adjacency:
+            for adj in adjacency[B]:
+                fd.write(f'\t"0x{B:x}" -> "0x{adj:x}"\n')
         fd.write('}\n')
 
 
@@ -69,12 +69,12 @@ def makeEdges(disas, BASIC_BLOCKS):
     """Connect the BASIC_BLOCKS by edges.
 
     Takes a generator of Capstone disassembled instructions and a list of basic blocks.
-    Returns an adjacency matrix[i][j] of a directed graph where i->j are edges.
-    Example: [[0x0, 0x2],[0x0, 0x1],[0x0, 0x1, 0x2]]<- makeEdges(disas, BASIC_BLOCKS)
+    Returns an adjacency matrix[i][j] (Python dict) of a directed graph where i->j are edges.
+    Example: {0x0: [0x2], 0x1: [0x0], 0x2: [0x0, 0x1]}<- makeEdges(disas, BASIC_BLOCKS)
     In the example 0x0->0x2, 0x1->0x0, 0x2->0x0, 0x2->0x1 are the directed edges.
     """
     disas, frshDisas = tee(disas)
-    adjacency = []
+    adjacency = {}
     for B in BASIC_BLOCKS:
         disas, frshDisas = tee(frshDisas)
         adjB = []
@@ -83,9 +83,6 @@ def makeEdges(disas, BASIC_BLOCKS):
         op = next(disas)
         while op.address < B:
             op = next(disas)
-        # op is now the first basic block instruction
-        # by definition here: each vertices is conncted to itself
-        adjB.append(op.address)
         op = next(disas)
         while op.address not in BASIC_BLOCKS:
             # walk up to the next block
@@ -115,7 +112,7 @@ def makeEdges(disas, BASIC_BLOCKS):
         else:
             # For single instructions that are immediately succeeded by another basic block
             adjB.append(op.address)
-        adjacency.append(adjB)
+        adjacency[B]= adjB
     return adjacency
 
 
@@ -161,8 +158,8 @@ disas, frshDisas = tee(frshDisas)
 
 print("\n# Basic blocks and their connected basic blocks:")
 adjacency = makeEdges(disas, BASIC_BLOCKS)
-for adj in adjacency:
-    nodes = ', '.join('0x%x' % i for i in adj)
-    print(f"0x{adj[0]:x}: {nodes}")
+for B in adjacency:
+    nodes = ', '.join('0x%x' % i for i in adjacency[B])
+    print(f"0x{B:x}: {nodes}")
 
 writeDOT(adjacency)
