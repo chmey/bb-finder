@@ -51,7 +51,11 @@ def getJumpSuccessors(disas):
 
 
 def writeDOT(adjacency):
-    """Write the graph as a DOT file."""
+    """Write the graph as a DOT file.
+
+    Expects an adjacency dictionary as returned by makeEdges().
+    Writes its output to cfg.dot on the filesystem.
+    """
     with open("cfg.dot", "w") as fd:
         fd.write('digraph basic_blocks {\n')
         for B in adjacency:
@@ -112,7 +116,7 @@ def makeEdges(disas, BASIC_BLOCKS):
         else:
             # For single instructions that are immediately succeeded by another basic block
             adjB.append(op.address)
-        adjacency[B]= adjB
+        adjacency[B] = adjB
     return adjacency
 
 
